@@ -28,4 +28,5 @@ The Smart Exam Hall Monitoring and Management System is an embedded solution des
 | **Switches**           | Used for interrupt-based control              |
 | **USB-UART / DB-9**    | Used for programming and communication        |
 ## Block Diagram
-<img width="1536" height="1024" alt="block-diagram png" src="https://github.com/user-attachments/assets/e19cdee9-f8de-46c8-992d-24a9c690f4c8" /> 
+<img width="1536" height="1024" alt="block diagram png" src="https://github.com/user-attachments/assets/62628c03-1505-48e5-b991-47292409dfbd" />
+
