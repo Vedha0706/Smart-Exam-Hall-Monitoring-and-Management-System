@@ -30,3 +30,17 @@ The Smart Exam Hall Monitoring and Management System is an embedded solution des
 ## Block Diagram
 <img width="1536" height="1024" alt="block diagram png" src="https://github.com/user-attachments/assets/62628c03-1505-48e5-b991-47292409dfbd" />
 
+## Pin Configuration
+
+| Signal / Component | LPC2148 Pin(s) | Description |
+|---|---|---|
+| LCD Data | P0.8 – P0.15 | 8-bit data |
+| LCD RS / EN | P0.16 / P0.17 | LCD control |
+| 4×4 Keypad | P1.16 – P1.23 | 4×4 key input |
+| 7-Segment Data | P1.24 – P1.31 | Segment data |
+| 7-Segment Select | P0.20 / P0.21 | Digit 1 / Digit 2 |
+| Status LEDs | P0.2 / P0.3 / P0.4 | Green / Yellow / Red |
+| Pause LED | P0.25 | Pause indication |
+| Buzzer | P0.23 | Final-stage alert |
+| LM35 | P0.28 | Temperature input |
+| Interrupts | P0.1 / P0.7 | Admin / Pause-Resume |
