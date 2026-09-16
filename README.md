@@ -44,3 +44,199 @@ The Smart Exam Hall Monitoring and Management System is an embedded solution des
 | Buzzer | P0.23 | Final-stage alert |
 | LM35 | P0.28 | Temperature input |
 | Interrupts | P0.1 / P0.7 | Admin / Pause-Resume |
+## System Architecture
+
+```text
+├── main_pro.c              # Main program and initialization
+├── interrupt_p.c/h         # EINT0/EINT1 interrupt handling
+├── rtc_mpt.c/h             # RTC operation
+├── rtc_edit.c              # RTC configuration
+├── kpm_mp.c/h              # 4×4 keypad handling
+├── lcd_t.c/h               # LCD driver
+├── adc_mpt.c/h             # ADC driver
+├── lm35_mpt.c/h            # LM35 temperature measurement
+├── led_mpt.c/h             # LED status control
+├── buzzer_mpt.c/h          # Buzzer control
+├── 7seg_mpt.c/h            # 7-segment display driver
+├── timer.c/h               # Examination countdown timer
+├── delay.c/h               # Delay functions
+└── types_t.h, defines.h    # Common definitions
+```
+## System Working
+
+The Smart Exam Hall Monitoring and Management System operates as follows:
+
+1. **System Initialization**
+
+   * The LPC2148 microcontroller initializes the RTC, LCD, keypad, ADC, LM35, LEDs, buzzer, 7-segment displays, timer, and interrupts.
+
+2. **Normal Display**
+
+   * The LCD continuously displays the current **RTC time** and **room temperature** measured using the LM35 sensor.
+
+3. **Exam Configuration**
+
+   * The administrator presses **EINT0** to enter the protected configuration mode.
+   * A password is requested through the keypad.
+   * After successful authentication, the administrator can configure the **RTC time, exam start time, and exam duration** using the keypad.
+
+4. **Exam Start**
+
+   * When the configured exam start time is reached, the system automatically starts the examination countdown.
+   * The exam start time is recorded using the RTC.
+
+5. **Countdown and Display**
+
+   * The Timer0 module controls the examination countdown.
+   * The remaining examination time is displayed on the **two multiplexed 7-segment displays**.
+   * The LCD continues to display the RTC time and room temperature.
+
+6. **Visual Alerts**
+
+   * **Green LED:** More than 10 minutes remaining.
+   * **Yellow LED:** Final 10 minutes.
+   * **Red LED:** Final 1 minute.
+
+7. **Pause and Resume**
+
+   * The administrator can use **EINT1** to pause the examination countdown.
+   * Pressing EINT1 again resumes the countdown.
+
+8. **Temperature Monitoring**
+
+   * The LM35 continuously measures the room temperature through the ADC.
+   * The converted temperature value is displayed on the LCD.
+
+9. **Exam Completion**
+
+   * When the countdown reaches **zero**, the buzzer is activated to indicate the end of the examination.
+   * The red LED indicates the final exam status.
+   * The examination end time is recorded using the RTC.
+
+10. **System Continuation**
+
+    * After the examination ends, the system returns to its normal monitoring state and continues displaying the RTC time and temperature.
+## Project Workflow
+
+```text
+                    ┌──────────────────────┐
+                    │   System Power ON    │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ System Initialization│
+                    │  LPC2148 Peripherals │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │   Display RTC Time   │
+                    │  & Room Temperature  │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │      EINT0 Pressed   │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │   Password Check     │
+                    └──────────┬───────────┘
+                               │
+                       ┌───────┴───────┐
+                       │               │
+                    Invalid          Valid
+                       │               │
+                       ▼               ▼
+                ┌────────────┐  ┌─────────────────────┐
+                │   Return   │  │ Configure RTC /     │
+                │ to Normal  │  │ Start Time / Duration│
+                └────────────┘  └──────────┬──────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │  Wait for Exam Start  │
+                                │       Time            │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │     Start Exam        │
+                                │ Record Start Time     │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │   Start Countdown     │
+                                │     Timer0            │
+                                └──────────┬───────────┘
+                                           │
+                    ┌──────────────────────┼──────────────────────┐
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+             ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+             │ LCD Display  │     │ 7-Segment    │     │ LM35 + ADC   │
+             │ RTC + Temp   │     │ Remaining    │     │ Temperature  │
+             └──────────────┘     │ Time         │     └──────────────┘
+                                  └──────────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │   LED Status Alert    │
+                                │ Green / Yellow / Red  │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │      EINT1 Pressed?   │
+                                └──────────┬───────────┘
+                                           │
+                                     Yes   │
+                                           ▼
+                                ┌──────────────────────┐
+                                │   Pause / Resume     │
+                                │     Countdown        │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │   Countdown = Zero?  │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │    Activate Buzzer   │
+                                │   Record End Time    │
+                                └──────────┬───────────┘
+                                           │
+                                           ▼
+                                ┌──────────────────────┐
+                                │ Return to Monitoring │
+                                │    State             │
+                                └──────────────────────┘
+``` 
+## Development Tools and Environment
+
+* **Microcontroller:** LPC2148 ARM7
+* **Programming Language:** Embedded C
+* **IDE:** Keil µVision
+* **Programming Tool:** Flash Magic
+* **Compiler:** ARM Compiler
+* **Debugging:** Serial communication through USB-UART / DB-9
+* **Development Platform:** Embedded Systems Hardware Setup
+## Future Scope
+
+* Integration of **IoT connectivity** for remote monitoring of examination halls.
+* Addition of **centralized monitoring** for managing multiple examination halls.
+* Automatic **data logging and report generation** for exam start and end times.
+* Integration of **wireless communication** for real-time status updates.
+* Integration of additional **environmental sensors** for monitoring hall conditions.
+* Enhancement of the system with **automated attendance and student monitoring**.
+* Use of advanced security features for improved **exam hall management and monitoring**.
+## Developed By
+
+Bhonagiri Vedha sri
+
+**Project**:Smart Exam Hall Monitoring and Management System.
